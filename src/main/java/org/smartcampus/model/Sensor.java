@@ -11,11 +11,10 @@ public class Sensor {
     // Default constructor required for Jackson deserialization
     public Sensor() {}
 
-    public Sensor(String id, String type, String status, double currentValue, String roomId) {
+    public Sensor(String id, String type, String status, String roomId) {
         this.id = id;
         this.type = type;
         this.status = status;
-        this.currentValue = currentValue;
         this.roomId = roomId;
     }
 
