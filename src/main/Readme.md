@@ -19,10 +19,16 @@
 2. Analysis Report 
 
 ---
+**1.Project Overview**
+
+The Smart Sensor & Room Management API 
+This project develops a fully RESTful web service for the module Client Server Architectures, simulating the backend infrastructure of a university smart campus system. It manages three interconnected sub-entities, including Rooms, Sensors, and Sensor Readings, and, through a versioned API rooted at /api/v1, built with JAX-RS, Jersey 2.39.1, and embedded Grizzly HTTP servers, all state is held in thread–safe in–memory structures. 
+The work progresses across five stages, including Room and sensor life cycle management, which is implemented with deliberate referential integrity constraints that prevent, for instance, the deletion of rooms that still contain active sensors. Sensor readings are handled through the sub-resource locator pattern, with each new reading automatically updating the parent sensor’s current value. The final stage introduces structured error handling via custom exceptions and ExceptionMapper providers, ensuring consistent JSON error responses, complemented by a logging filter that observes every HTTP transaction without modifying any resource code. 
+Throughout this coursework, the design adheres to established RESTful conventions, including proper HTTP semantics, meaningful status codes, and HATEOAS-driven resources discovery. 
+
+---
 
 **2.Analysis Report** 
-
-_Part 1.1 - JAX -RS Resource LifeCycle_ 
 
 1.1 Question: 
 
