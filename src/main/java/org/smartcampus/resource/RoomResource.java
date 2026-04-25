@@ -51,6 +51,28 @@ public class RoomResource {
         return Response.ok(room).build();
     }
 
+    @PUT
+    @Path("/{roomId}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updateRoom(@PathParam("roomId") String roomId, Room updatedRoom) {
+        Room existing = store.getRoomById(roomId)
+                .orElseThrow(() -> new ResourceNotFoundException("Room", roomId));
+
+        if (updatedRoom.getName() != null && !updatedRoom.getName().trim().isEmpty()) {
+            existing.setName(updatedRoom.getName());
+        }
+        if (updatedRoom.getCapacity() > 0) {
+            existing.setCapacity(updatedRoom.getCapacity());
+        }
+
+        store.saveRoom(existing);
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("message", "Room '" + roomId + "' updated successfully.");
+        response.put("room", existing);
+        return Response.ok(response).build();
+    }
+
     @DELETE
     @Path("/{roomId}")
     public Response deleteRoom(@PathParam("roomId") String roomId) {
