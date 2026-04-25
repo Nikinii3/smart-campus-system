@@ -4,7 +4,6 @@ import org.smartcampus.exception.SensorUnavailableException;
 import org.smartcampus.model.DataStore;
 import org.smartcampus.model.Sensor;
 import org.smartcampus.model.SensorReading;
-
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -23,6 +22,7 @@ public class SensorReadingResource {
         this.sensorId = sensorId;
     }
 
+
     @GET
     public Response getReadings() {
         List<SensorReading> readings = store.getReadingsForSensor(sensorId);
@@ -37,11 +37,14 @@ public class SensorReadingResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addReading(SensorReading reading) {
         Sensor sensor = store.getSensorById(sensorId).get();
+
         if (!"ACTIVE".equalsIgnoreCase(sensor.getStatus())) {
             throw new SensorUnavailableException(sensorId, sensor.getStatus());
         }
         if (reading == null) {
-            return Response.status(400).entity("Request body with value field is required.").build();
+            return Response.status(400)
+                    .entity(error(400, "Bad Request", "Request body with a 'value' field is required."))
+                    .build();
         }
         if (reading.getId() == null || reading.getId().trim().isEmpty()) {
             reading.setId(UUID.randomUUID().toString());
@@ -49,6 +52,7 @@ public class SensorReadingResource {
         if (reading.getTimestamp() == 0) {
             reading.setTimestamp(System.currentTimeMillis());
         }
+
         store.addReadingForSensor(sensorId, reading);
         sensor.setCurrentValue(reading.getValue());
         store.saveSensor(sensor);
@@ -69,8 +73,39 @@ public class SensorReadingResource {
                 .filter(r -> r.getId().equals(readingId))
                 .findFirst().orElse(null);
         if (found == null) {
-            return Response.status(404).entity("Reading '" + readingId + "' not found.").build();
+            return Response.status(404)
+                    .entity(error(404, "Not Found", "Reading '" + readingId + "' not found for sensor '" + sensorId + "'."))
+                    .build();
         }
         return Response.ok(found).build();
+    }
+
+    @DELETE
+    @Path("/{readingId}")
+    public Response deleteReading(@PathParam("readingId") String readingId) {
+        List<SensorReading> readings = store.getReadingsForSensor(sensorId);
+        SensorReading found = readings.stream()
+                .filter(r -> r.getId().equals(readingId))
+                .findFirst().orElse(null);
+        if (found == null) {
+            return Response.status(404)
+                    .entity(error(404, "Not Found", "Reading '" + readingId + "' not found for sensor '" + sensorId + "'."))
+                    .build();
+        }
+        readings.remove(found);
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("message", "Reading '" + readingId + "' deleted successfully.");
+        response.put("sensorId", sensorId);
+        response.put("deletedReadingId", readingId);
+        return Response.ok(response).build();
+    }
+
+    private Map<String, Object> error(int status, String error, String message) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("status", status);
+        body.put("error", error);
+        body.put("message", message);
+        body.put("timestamp", System.currentTimeMillis());
+        return body;
     }
 }
