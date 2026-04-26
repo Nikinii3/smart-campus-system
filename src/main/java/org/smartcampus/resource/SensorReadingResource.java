@@ -1,5 +1,6 @@
 package org.smartcampus.resource;
 
+import org.smartcampus.exception.ResourceNotFoundException;
 import org.smartcampus.exception.SensorUnavailableException;
 import org.smartcampus.model.DataStore;
 import org.smartcampus.model.Sensor;
@@ -36,7 +37,9 @@ public class SensorReadingResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addReading(SensorReading reading) {
-        Sensor sensor = store.getSensorById(sensorId).get();
+
+        Sensor sensor = store.getSensorById(sensorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sensor", sensorId));
 
         if (!"ACTIVE".equalsIgnoreCase(sensor.getStatus())) {
             throw new SensorUnavailableException(sensorId, sensor.getStatus());
