@@ -50,11 +50,29 @@ public class SensorResource {
         if (!store.roomExists(sensor.getRoomId())) {
             throw new LinkedResourceNotFoundException("Room", sensor.getRoomId());
         }
-        if (sensor.getStatus() == null || sensor.getStatus().trim().isEmpty()) {
-            sensor.setStatus("ACTIVE");
+
+        // Block MAINTENANCE or OFFLINE sensors from being assigned to a room
+        if (sensor.getStatus() != null) {
+            String upperStatus = sensor.getStatus().toUpperCase();
+            if (upperStatus.equals("MAINTENANCE")) {
+                return Response.status(400).entity(error(400, "Bad Request",
+                        "Cannot assign sensor '" + sensor.getId() + "' to a room because it is in MAINTENANCE status. " +
+                                "Only ACTIVE sensors can be assigned to rooms.")).build();
+            }
+            if (upperStatus.equals("OFFLINE")) {
+                return Response.status(400).entity(error(400, "Bad Request",
+                        "Cannot assign sensor '" + sensor.getId() + "' to a room because it is OFFLINE. " +
+                                "Only ACTIVE sensors can be assigned to rooms.")).build();
+            }
+            if (!upperStatus.equals("ACTIVE")) {
+                return Response.status(400).entity(error(400, "Bad Request",
+                        "Sensor 'status' must be one of: ACTIVE, MAINTENANCE, OFFLINE.")).build();
+            }
+            sensor.setStatus(upperStatus);
         } else {
-            sensor.setStatus(sensor.getStatus().toUpperCase());
+            sensor.setStatus("ACTIVE");
         }
+
         store.saveSensor(sensor);
         Room room = store.getRoomById(sensor.getRoomId()).get();
         room.addSensorId(sensor.getId());
@@ -71,6 +89,74 @@ public class SensorResource {
         Sensor sensor = store.getSensorById(sensorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sensor", sensorId));
         return Response.ok(sensor).build();
+    }
+
+    @PUT
+    @Path("/{sensorId}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updateSensor(@PathParam("sensorId") String sensorId, Sensor updatedSensor) {
+
+        Sensor existing = store.getSensorById(sensorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sensor", sensorId));
+
+
+        if (updatedSensor.getType() != null && !updatedSensor.getType().trim().isEmpty()) {
+            existing.setType(updatedSensor.getType());
+        }
+
+
+        if (updatedSensor.getStatus() != null && !updatedSensor.getStatus().trim().isEmpty()) {
+            String newStatus = updatedSensor.getStatus().toUpperCase();
+            if (!newStatus.equals("ACTIVE") &&
+                    !newStatus.equals("MAINTENANCE") &&
+                    !newStatus.equals("OFFLINE")) {
+                return Response.status(400).entity(error(400, "Bad Request",
+                        "Status must be one of: ACTIVE, MAINTENANCE, OFFLINE.")).build();
+            }
+            existing.setStatus(newStatus);
+        }
+
+        if (updatedSensor.getCurrentValue() != 0) {
+            existing.setCurrentValue(updatedSensor.getCurrentValue());
+        }
+
+        if (updatedSensor.getRoomId() != null && !updatedSensor.getRoomId().trim().isEmpty()) {
+
+            // Block MAINTENANCE sensor from being added to a new room
+            if (existing.getStatus().equals("MAINTENANCE")) {
+                return Response.status(400).entity(error(400, "Bad Request",
+                        "Cannot move sensor '" + sensorId + "' to a new room because it is in MAINTENANCE status. " +
+                                "Update the status to ACTIVE first.")).build();
+            }
+
+            // Block OFFLINE sensor from being moved to a new room
+            if (existing.getStatus().equals("OFFLINE")) {
+                return Response.status(400).entity(error(400, "Bad Request",
+                        "Cannot move sensor '" + sensorId + "' to a new room because it is OFFLINE. " +
+                                "Update the status to ACTIVE first.")).build();
+            }
+
+            // Validate the new room exists
+            if (!store.roomExists(updatedSensor.getRoomId())) {
+                throw new LinkedResourceNotFoundException("Room", updatedSensor.getRoomId());
+            }
+
+            // Remove sensor from old room
+            store.getRoomById(existing.getRoomId())
+                    .ifPresent(oldRoom -> oldRoom.removeSensorId(sensorId));
+
+            // Update sensor to new room
+            existing.setRoomId(updatedSensor.getRoomId());
+            store.getRoomById(updatedSensor.getRoomId())
+                    .ifPresent(newRoom -> newRoom.addSensorId(sensorId));
+        }
+
+        store.saveSensor(existing);
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("message", "Sensor '" + sensorId + "' updated successfully.");
+        response.put("sensor", existing);
+        return Response.ok(response).build();
     }
 
     @DELETE
