@@ -21,7 +21,8 @@
 4. [How to Build and Run](#how-to-build--run)
 5. [API Endpoints Reference](#api-endpoints-reference)
 6. [Test Cases - Postman](#test-cases---postman)
-7. [Conceptual Report](#conceptual-report)
+7. [Screenshots of URL](#screenshot-of-url)
+8. [Conceptual Report](#conceptual-report)
 
 ---
 
@@ -274,6 +275,18 @@ Expected: 200 OK — currentValue should now be 23.7.
 
 <img width="2877" height="1712" alt="image" src="https://github.com/user-attachments/assets/ec754e53-c7c7-4d5f-a2ee-585732248ca0" />
 
+
+---
+
+## Screenshots of URL
+
+<img width="2879" height="684" alt="image" src="https://github.com/user-attachments/assets/ae81957d-d7aa-4af8-9038-72716dffacda" />
+
+<img width="2876" height="703" alt="image" src="https://github.com/user-attachments/assets/e01b0a67-581b-4360-9c1f-0ddb8eeacaec" />
+
+<img width="2878" height="506" alt="image" src="https://github.com/user-attachments/assets/9e5b4442-3ba6-4f45-b039-90f203b2016a" />
+
+<img width="2879" height="513" alt="image" src="https://github.com/user-attachments/assets/4093ea64-2518-4def-bb9f-e67f707de307" />
 
 ---
 
