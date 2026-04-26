@@ -15,12 +15,13 @@
 
 ## Table of Content
 
-1. [API & Project Overview](#api--project--overview)
+1. [API & Project Overview](#api--project-overview)
 2. [Technology Stack](#technology-stack)
 3. [Project Structure](#project-structure)
 4. [How to Build and Run](#how-to-build--run)
 5. [API Endpoints Reference](#api-endpoints-reference)
-6. [Conceptual Report](#conceptual-report)
+6. [Test Cases - Postman](#test-cases---postman)
+7. [Conceptual Report](#conceptual-report)
 
 ---
 
@@ -266,6 +267,13 @@ curl -X GET http://localhost:8080/api/v1/sensors/TEMP-001
 ```
 
 Expected: 200 OK — currentValue should now be 23.7.
+
+---
+
+## Test Cases - Postman
+
+<img width="2877" height="1712" alt="image" src="https://github.com/user-attachments/assets/ec754e53-c7c7-4d5f-a2ee-585732248ca0" />
+
 
 ---
 
