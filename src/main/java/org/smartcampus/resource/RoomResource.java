@@ -26,7 +26,7 @@ public class RoomResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createRoom(Room room) {
-        if (room == null || room.getId() == null || room.getId().trim().isEmpty()) {
+        if (room == null || room.getId() == null || room.getId().trim().isBlank()) {
             return Response.status(400).entity(error(400, "Bad Request", "Room 'id' is required.")).build();
         }
         if (room.getName() == null || room.getName().trim().isEmpty()) {
@@ -58,7 +58,7 @@ public class RoomResource {
         Room existing = store.getRoomById(roomId)
                 .orElseThrow(() -> new ResourceNotFoundException("Room", roomId));
 
-        if (updatedRoom.getName() != null && !updatedRoom.getName().trim().isEmpty()) {
+        if (updatedRoom.getName() != null && !updatedRoom.getName().trim().isBlank()) {
             existing.setName(updatedRoom.getName());
         }
         if (updatedRoom.getCapacity() > 0) {
