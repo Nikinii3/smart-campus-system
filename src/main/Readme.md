@@ -3,7 +3,7 @@
 ## A fully RESTful JAX-RS (Jersey) API for managing university campus room and Iot Sensors. 
 
 ---
-**Module Name & Code:** COSC022W – Client-Server Architectures, University of Westminster.
+**Module Name & Code:** 5COSC022W – Client-Server Architectures, University of Westminster.
 
 **Student Name:** Milsha Nikini Mihisarnai
 
@@ -34,7 +34,7 @@ The Smart Campus API provides a versioned RESTful interface for facilities manag
 - **Sensors** - IoT devices deployed within rooms (temperature, CO2, occupancy)
 - **Sensor Readings** - Historical timestamped data logs per sensor
 
-Base URL: `http://localhost:8080/api/v1`
+Base URL: `http://localhost:8080/smart-campus-api/api/v1`
 
 This project develops a fully RESTful web service for the module Client Server Architectures, simulating the backend infrastructure of a university smart campus system. It manages three interconnected sub-entities, including Rooms, Sensors, and Sensor Readings, and, through a versioned API rooted at /api/v1, built with JAX-RS, Jersey 2.39.1, and embedded Grizzly HTTP servers, all state is held in thread–safe in–memory structures. 
 The work progresses across five stages, including Room and sensor life cycle management, which is implemented with deliberate referential integrity constraints that prevent, for instance, the deletion of rooms that still contain active sensors. Sensor readings are handled through the sub-resource locator pattern, with each new reading automatically updating the parent sensor’s current value. The final stage introduces structured error handling via custom exceptions and ExceptionMapper providers, ensuring consistent JSON error responses, complemented by a logging filter that observes every HTTP transaction without modifying any resource code. 
@@ -48,7 +48,8 @@ Throughout this coursework, the design adheres to established RESTful convention
 |-----------|-----------|
 | Language | Java 11+ |
 | JAX-RS Implementation | Jersey 2.39.1 |
-| HTTP Server | Grizzly2 (embedded) |
+| HTTP Server | Tomcat 9.0+ (Servlet Container) |
+| Dependancy | javax. servlet.api |
 | JSON Serialization | Jackson (jersey-media-json-jackson) |
 | Build Tool | Apache Maven 3.x |
 | Data Storage | In-memory ConcurrentHashMap (no database) |
@@ -59,35 +60,42 @@ Throughout this coursework, the design adheres to established RESTful convention
 
 ```
 smart-campus-api/
-├── pom.xml
-└── src/main/java/org/smartcampus/
-    ├── application/
-    │   ├── Main.java                              # Entry point — starts Grizzly server
-    │   └── SmartCampusApplication.java            # @ApplicationPath("/api/v1") bootstrap (Tutorial Week 07)
-    ├── model/
-    │   ├── Room.java                              # Room POJO (Tutorial Week 01 — Classes & Objects)
-    │   ├── Sensor.java                            # Sensor POJO
-    │   ├── SensorReading.java                     # SensorReading POJO
-    │   └── DataStore.java                         # Thread-safe singleton (Tutorial Week 02 — 3-Tier & Concurrency, Tutorial Week 08 — DAO pattern)
-    ├── resource/
-    │   ├── DiscoveryResource.java                 # GET /api/v1 — HATEOAS discovery (Tutorial Week 07)
-    │   ├── RoomResource.java                      # /api/v1/rooms (Tutorial Week 07 & 08)
-    │   ├── SensorResource.java                    # /api/v1/sensors with @QueryParam filter (Tutorial Week 07 & 08)
-    │   └── SensorReadingResource.java             # Sub-resource pattern (Tutorial Week 07)
-    ├── exception/
-    │   ├── ErrorResponse.java                     # JSON error body (Tutorial Week 09 — ErrorMessage model)
-    │   ├── RoomNotEmptyException.java             # Custom exception (Tutorial Week 09)
-    │   ├── LinkedResourceNotFoundException.java   # Custom exception (Tutorial Week 09)
-    │   ├── SensorUnavailableException.java        # Custom exception (Tutorial Week 09)
-    │   ├── ResourceNotFoundException.java         # Custom exception (Tutorial Week 09)
-    │   ├── RoomNotEmptyExceptionMapper.java       # @Provider — 409 (Tutorial Week 09 — ExceptionMapper)
-    │   ├── LinkedResourceNotFoundExceptionMapper.java  # @Provider — 422
-    │   ├── SensorUnavailableExceptionMapper.java  # @Provider — 403
-    │   ├── ResourceNotFoundExceptionMapper.java   # @Provider — 404
-    │   └── GlobalExceptionMapper.java             # @Provider — 500 catch-all
-    └── filter/
-        └── ApiLoggingFilter.java                  # ContainerRequestFilter + ContainerResponseFilter (Tutorial Week 09 — LoggingFilter)
+├── pom.xml                                        # Maven configuration (updated to <packaging>war</packaging>) [cite: 24]
+└── src/
+    └── main/
+        ├── java/org/smartcampus/
+        │   ├── application/
+        │   │   └── SmartCampusApplication.java    # @ApplicationPath("/api/v1") bootstrap [cite: 20]
+        │   ├── model/
+        │   │   ├── Room.java                      # Room POJO [cite: 7]
+        │   │   ├── Sensor.java                    # Sensor POJO [cite: 6]
+        │   │   ├── SensorReading.java             # SensorReading POJO [cite: 5]
+        │   │   └── DataStore.java                 # Thread-safe singleton [cite: 8]
+        │   ├── resource/
+        │   │   ├── DiscoveryResource.java         # GET /api/v1 — HATEOAS discovery (updated with /smart-campus-api context) [cite: 4]
+        │   │   ├── RoomResource.java              # /api/v1/rooms management [cite: 3]
+        │   │   ├── SensorResource.java            # /api/v1/sensors with @QueryParam filtering [cite: 1]
+        │   │   └── SensorReadingResource.java     # Sub-resource for sensor data [cite: 2]
+        │   ├── exception/
+        │   │   ├── ErrorResponse.java             # JSON error body [cite: 19]
+        │   │   ├── RoomNotEmptyException.java     # Custom exception [cite: 13]
+        │   │   ├── LinkedResourceNotFoundException.java   # Custom exception (Tutorial Week 09)
+        │   │   ├── SensorUnavailableException.java        # Custom exception (Tutorial Week 09)
+        │   │   ├── ResourceNotFoundException.java         # Custom exception (Tutorial Week 09)
+        │   │   ├── RoomNotEmptyExceptionMapper.java       # @Provider — 409 (Tutorial Week 09 — ExceptionMapper)
+        │   │   ├── LinkedResourceNotFoundExceptionMapper.java  # @Provider — 422
+        │   │   ├── SensorUnavailableExceptionMapper.java  # @Provider — 403
+        │   │   ├── ResourceNotFoundExceptionMapper.java   # @Provider — 404
+        │   │   ├── GlobalExceptionMapper.java     # @Provider — 500 catch-all [cite: 18]
+        │   └── filter/
+        │       └── ApiLoggingFilter.java          # ContainerRequest/Response logging filter [cite: 9]
+        └── webapp/                                # New: Root for web application resources 
+            ├── WEB-INF/
+            │   └── web.xml                        # New: Servlet deployment descriptor for Tomcat 
+            └── index.html                         # New: Professional API Gateway landing page
 ```
+
+
 
 ---
 
@@ -111,23 +119,21 @@ cd smart-campus-api
 mvn clean package
 ```
 
-This produces a fat JAR at `target/smart-campus-api-1.0.0.jar` with all dependencies bundled via Maven Shade Plugin.
+This produces a WAR file at target/smart-campus-api-1.0.0.war ready for deployment on Apache Tomcat.
 
 ### Step 3 — Start the server
 
 ```bash
-java -jar target/smart-campus-api-1.0.0.jar
+Right-click project in NetBeans → Run
+Or deploy the generated WAR file to Tomcat manually:
+Copy target/smart-campus-api-1.0.0.war to Tomcat's webapps/ folder
+Start Tomcat and navigate to http://localhost:8080/smart-campus-api/api/v1
 ```
 
-You should see:
-
-```
-INFO: Smart Campus API started successfully!
-INFO: Discovery endpoint: http://localhost:8080/api/v1
-INFO: Rooms:              http://localhost:8080/api/v1/rooms
-INFO: Sensors:            http://localhost:8080/api/v1/sensors
-INFO: Press ENTER to stop the server...
-```
+> **Note on Tomcat Context Path:** When deploying to Apache Tomcat, the
+> project name is automatically used as the context path. This means all
+> URLs are prefixed with /smart-campus-api/ before /api/v1.
+> If you rename the project or WAR file, update the URLs accordingly.
 
 ### Step 4 — Test the API
 
@@ -144,34 +150,34 @@ Press **ENTER** in the server terminal to stop it gracefully.
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/api/v1` | API discovery — metadata, version, HATEOAS links |
+| GET | `/smart-campus-api/api/v1` | API discovery — metadata, version, HATEOAS links |
 
 ### Part 2 — Rooms
 
 | Method | Path | Description | Status |
 |--------|------|-------------|--------|
-| GET | `/api/v1/rooms` | List all rooms | 200 |
-| POST | `/api/v1/rooms` | Create a new room | 201 |
-| GET | `/api/v1/rooms/{roomId}` | Get a specific room | 200 / 404 |
-| DELETE | `/api/v1/rooms/{roomId}` | Delete room (blocked if sensors exist) | 200 / 404 / 409 |
+| GET | `/smart-campus-api/api/v1/rooms` | List all rooms | 200 |
+| POST | `/smart-campus-api/api/v1/rooms` | Create a new room | 201 |
+| GET | `/smart-campus-api/api/v1/rooms/{roomId}` | Get a specific room | 200 / 404 |
+| DELETE | `/smart-campus-api/api/v1/rooms/{roomId}` | Delete room (blocked if sensors exist) | 200 / 404 / 409 |
 
 ### Part 3 — Sensors
 
 | Method | Path | Description | Status |
 |--------|------|-------------|--------|
-| GET | `/api/v1/sensors` | List all sensors (optional `?type=` filter) | 200 |
-| POST | `/api/v1/sensors` | Register sensor (validates roomId) | 201 / 422 |
-| GET | `/api/v1/sensors/{sensorId}` | Get a specific sensor | 200 / 404 |
-| PUT | `/api/v1/sensors/{sensorId}` | Update sensor fields | 200 / 404 |
-| DELETE | `/api/v1/sensors/{sensorId}` | Remove a sensor | 200 / 404 |
+| GET | `/smart-campus-api/api/v1/sensors` | List all sensors (optional `?type=` filter) | 200 |
+| POST | `/smart-campus-api/api/v1/sensors` | Register sensor (validates roomId) | 201 / 422 |
+| GET | `/smart-campus-api/api/v1/sensors/{sensorId}` | Get a specific sensor | 200 / 404 |
+| PUT | `/smart-campus-api/api/v1/sensors/{sensorId}` | Update sensor fields | 200 / 404 |
+| DELETE | `/smart-campus-api/api/v1/sensors/{sensorId}` | Remove a sensor | 200 / 404 |
 
 ### Part 4 — Sensor Readings (Sub-Resource)
 
 | Method | Path | Description | Status |
 |--------|------|-------------|--------|
-| GET | `/api/v1/sensors/{sensorId}/readings` | Get all readings for a sensor | 200 |
-| POST | `/api/v1/sensors/{sensorId}/readings` | Record a new reading | 201 / 403 |
-| GET | `/api/v1/sensors/{sensorId}/readings/{readingId}` | Get a specific reading | 200 / 404 |
+| GET | `/smart-campus-api/api/v1/sensors/{sensorId}/readings` | Get all readings for a sensor | 200 |
+| POST | `/smart-campus-api/api/v1/sensors/{sensorId}/readings` | Record a new reading | 201 / 403 |
+| GET | `/smart-campus-api/api/v1/sensors/{sensorId}/readings/{readingId}` | Get a specific reading | 200 / 404 |
 
 ---
 
@@ -182,7 +188,7 @@ Press **ENTER** in the server terminal to stop it gracefully.
 ### 1. Discover the API (Part 1)
 
 ```bash
-curl -X GET http://localhost:8080/api/v1 -H "Accept: application/json"
+curl -X GET http://localhost:8080/smart-campus-api/api/v1 -H "Accept: application/json"
 ```
 
 Expected: 200 OK with name, version, links, and capabilities.
@@ -190,7 +196,7 @@ Expected: 200 OK with name, version, links, and capabilities.
 ### 2. Get all Rooms (Part 2)
 
 ```bash
-curl -X GET http://localhost:8080/api/v1/rooms -H "Accept: application/json"
+curl -X GET http://localhost:8080/smart-campus-api/api/v1/rooms -H "Accept: application/json"
 ```
 
 Expected: 200 OK with array of 3 pre-seeded rooms.
@@ -198,7 +204,7 @@ Expected: 200 OK with array of 3 pre-seeded rooms.
 ### 3. Create a new Room (Part 2)
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/rooms \
+curl -X POST http://localhost:8080/smart-campus-api/api/v1/rooms \
   -H "Content-Type: application/json" \
   -d '{"id": "CONF-005", "name": "Conference Room", "capacity": 20}'
 ```
@@ -208,7 +214,7 @@ Expected: 201 Created.
 ### 4. Delete a Room with sensors — 409 Conflict (Part 2 + Part 5.1)
 
 ```bash
-curl -X DELETE http://localhost:8080/api/v1/rooms/LIB-003
+curl -X DELETE http://localhost:8080/smart-campus-api/api/v1/rooms/LIB-003
 ```
 
 Expected: 409 Conflict — room still has sensors.
@@ -216,7 +222,7 @@ Expected: 409 Conflict — room still has sensors.
 ### 5. Create a Sensor with valid roomId (Part 3)
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/sensors \
+curl -X POST http://localhost:8080/smart-campus-api/api/v1/sensors \
   -H "Content-Type: application/json" \
   -d '{"id": "TEMP-001", "type": "Temperature", "status": "ACTIVE", "currentValue": 750.0, "roomId": "AUDI-001"}'
 ```
@@ -226,7 +232,7 @@ Expected: 201 Created.
 ### 6. Create a Sensor with invalid roomId — 422 (Part 3 + Part 5.2)
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/sensors \
+curl -X POST http://localhost:8080/smart-campus-api/api/v1/sensors \
   -H "Content-Type: application/json" \
   -d '{"id": "CO2-999", "type": "CO2", "status": "ACTIVE", "currentValue": 400.0, "roomId": "FAKE-ROOM"}'
 ```
@@ -236,7 +242,7 @@ Expected: 422 Unprocessable Entity.
 ### 7. Filter sensors by type (Part 3)
 
 ```bash
-curl -X GET "http://localhost:8080/api/v1/sensors?type=Temperature"
+curl -X GET "http://localhost:8080/smart-campus-api/api/v1/sensors?type=Temperature"
 ```
 
 Expected: 200 OK with only Temperature sensors.
@@ -244,7 +250,7 @@ Expected: 200 OK with only Temperature sensors.
 ### 8. Post a reading to an ACTIVE sensor (Part 4)
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/sensors/TEMP-001/readings \
+curl -X POST http://localhost:8080/smart-campus-api/api/v1/sensors/TEMP-001/readings \
   -H "Content-Type: application/json" \
   -d '{"value": 100.02}'
 ```
@@ -254,7 +260,7 @@ Expected: 201 Created. Sensor currentValue updated to 23.7.
 ### 9. Post a reading to a MAINTENANCE sensor — 403 (Part 5.3)
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/sensors/OCC-001/readings \
+curl -X POST http://localhost:8080/smart-campus-api/api/v1/sensors/OCC-001/readings \
   -H "Content-Type: application/json" \
   -d '{"value": 15.0}'
 ```
@@ -264,7 +270,7 @@ Expected: 403 Forbidden.
 ### 10. Verify currentValue was updated after reading (Part 4 side effect)
 
 ```bash
-curl -X GET http://localhost:8080/api/v1/sensors/TEMP-001
+curl -X GET http://localhost:8080/smart-campus-api/api/v1/sensors/TEMP-001
 ```
 
 Expected: 200 OK — currentValue should now be 23.7.
@@ -303,7 +309,7 @@ Explain the default lifecycle of a JAX-RS Resource class. Is a new instance inst
 As introduced in the Tutorial Week 7, a JAX -RS application is configured via a class that extends javax.ws.rs.core.Application is annotated with @ApplicationPath. Resource classes are registered inside the getClassses() method. By default, we know that the JAX-RS runtime creates a brand-new instance of each resource class for every incoming HTTP request (Pre-request scope). Once the response is sent, the instance is discarded. 
 This simply means that the instance variables on resource classes are entirely transient, any data stored as an instance field is lost after each request. In Tutorial 8, we learned that data must live in a centralized store (MockDatabase) completely separate from resource classes.
 In this project, all shared mutable state lives in the DataStore file, which is created once at JVM startup and shared across all requests. This directly mirrors the 3-Tier Architecture discussed in the Tutorial Week 2, where the data Tier is completely separated from the Business Logic tier. 
-Because multiple HTTP requests arrive concurrently, each on its own thread or link, as mentioned in the Tutorial Week 2, multi-threading part, the DataSource must be thread-safe.  A plain HashMap risks data corruption when two threads write or run simultaneously. In this coursework, ConcurrentHashMap is used instead, which achieves thread safety through fine-grained interlocking without requiring explicit synchronized blocks on every method.
+Because Apache Tomcat handles multiple HTTP requests concurrently — assigning each request to a thread from its internal thread pool, as explored in Tutorial Week 02's multithreading exercise — the DataStore must be thread-safe. Tomcat's thread pool means many requests can hit the same DataStore simultaneously, making ConcurrentHashMap essential to prevent race conditions and data corruption.
 
 ----
 ### Part 1.2 — HATEOAS and Hypermedia
@@ -316,7 +322,16 @@ Why is Hypermedia (HATEOAS) considered a hallmark of advanced RESTful design? Ho
 
 Here we know HATEOAS Hypermedia as the engineer of the application states, because it is the highest maturity level of REST design, and responses include not just data but hyperlinks, describing what the client can do in the next step. 
 In the above-mentioned JAX-RS resource paths via @Path annotations, HATEOAS extends this by making the API self-describing at runtime. Rather than a client hardcoding every URL form response body, this is exactly like a user navigating a website by following links. 
-In this smart-campus-api project, GET/api/v1 returns links to api/v1/rooms and api/v1/sensors. As mentioned before, a client starting from this one entry point can navigate the entire API. 
+
+Note: When deployed on Apache Tomcat, all links are relative to the 
+context path /smart-campus-api/, so the full URL for the rooms 
+collection becomes http://localhost:8080/smart-campus-api/api/v1/rooms.
+The HATEOAS links returned in responses use relative paths, making 
+them portable across different deployments regardless of the 
+context path.
+
+In this smart-campus-api project, GET/api/v1 returns links to /smart-campus-api/api/v1/rooms and /smart-campus-api/api/v1/sensors. As mentioned before,
+a client starting from this one entry point can navigate the entire API. 
 As benefits over static documentation, 
 1.	Discoverability: When it comes to a single-entry point that reveals the Full API Structure dynamically, it makes it useful for work. 
 2.	Decoupling: If a URL changes server-side, clients following links or links used by clients will be adapted automatically. 
