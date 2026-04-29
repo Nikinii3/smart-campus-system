@@ -31,9 +31,9 @@ public class DiscoveryResource {
 
         //Collection of links for primary resource - HATEOAS
         Map<String, String> links = new LinkedHashMap<>();
-        links.put("self", "/api/v1");
-        links.put("rooms", "/api/v1/rooms");
-        links.put("sensors", "/api/v1/sensors");
+        links.put("self", "/smart-campus-api/api/v1");
+        links.put("rooms", "/smart-campus-api/api/v1/rooms");
+        links.put("sensors", "/smart-campus-api/api/v1/sensors");
         response.put("links", links);
 
         //API capabilities summary
