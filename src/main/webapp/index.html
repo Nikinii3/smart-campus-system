@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Campus API Gateway</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #ffffff;
+            --text: #1f2937;
+            --border: #e5e7eb;
+            --muted: #6b7280;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            color: var(--text);
+            line-height: 1.5;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f8fafc;
+        }
+
+        .container { 
+            width: 100%;
+            max-width: 640px; 
+            padding: 2rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        header {
+            border-bottom: 2px solid var(--text);
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+        }
+
+        h1 { 
+            font-size: 1.5rem; 
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        p { margin-top: 0.5rem; color: var(--muted); }
+
+        .endpoint-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .endpoint {
+            padding: 1rem;
+            border: 1px solid var(--border);
+            transition: border-color 0.2s;
+        }
+
+        .endpoint:hover {
+            border-color: var(--primary);
+        }
+
+        .endpoint strong {
+            display: block;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 0.25rem;
+        }
+
+        a { 
+            color: var(--primary); 
+            text-decoration: none; 
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+
+        a:hover { text-decoration: underline; }
+
+        footer {
+            margin-top: 2.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.75rem;
+            font-family: monospace;
+            color: var(--muted);
+        }
+
+        code { background: #f1f5f9; padding: 0.2rem 0.4rem; border-radius: 4px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Smart Campus API</h1>
+        <p>System Management Gateway</p>
+    </header>
+
+    <div class="endpoint-list">
+        <div class="endpoint">
+            <strong>Discovery</strong>
+            <a href="api/v1">Service Metadata & HATEOAS</a>
+        </div>
+
+        <div class="endpoint">
+            <strong>Inventory</strong>
+            <a href="api/v1/rooms">Room Management</a>
+        </div>
+
+        <div class="endpoint">
+            <strong>Hardware</strong>
+            <a href="api/v1/sensors">IoT Sensor Monitoring</a>
+        </div>
+    </div>
+
+    <footer>
+        BASE_URL: <code>http://localhost:8080/smart-campus-api/api/v1</code>
+    </footer>
+</div>
+</body>
+</html>
